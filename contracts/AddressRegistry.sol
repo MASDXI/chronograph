@@ -12,25 +12,53 @@ abstract contract AddressRegistry {
     using Geographical for uint256;
 
     struct Geolocation {
-        // maybe latitude longitude
+        uint256 latitude;
+        uint256 longitude;
     }
 
-    // citizen geographical tight to the address;
-    // merchant geographical tight to the address;
+    /** errors */
+    // @TODO declare custom error
+
+    /** events */
+    event AddressGeolocateMapped(
+        address indexed account,
+        uint256 latitude,
+        uint256 longitude
+    );
+    event AddressGeolocateUnmapped(address indexed account);
 
     mapping(address => Geolocation) private _registry;
 
-    function _addToRegistry(address account, Geolocation memory geolocate) internal {
-        // @TODO check not contain first.
-        _registry[account] = geolocate;
+    function _addToRegistry(
+        address account,
+        Geolocation memory geolocate
+    ) internal {
+        Geolocation memory geolocateCache = _registry[account];
+        if (geolocateCache.latitude == 0 && geolocateCache.longitude == 0) {
+            _registry[account] = geolocate;
+            emit AddressGeolocateMapped(
+                account,
+                geolocate.latitude,
+                geolocate.longitude
+            );
+        } else {
+            // @TODO revert
+        }
     }
 
     function _removeFromRegistry(address account) internal {
-        // @TODO check contain first.
-        _registry[account] = Geolocation(0);
+        Geolocation memory geolocateCache = _registry[account];
+        if (geolocateCache.latitude == 0 && geolocateCache.longitude == 0) {
+            // @TODO revert
+        } else {
+            delete _registry[account];
+            emit AddressGeolocateUnmapped(account);
+        }
     }
 
-    function geolocateOf(address account) public view returns (Geolocation memory) {
+    function geolocateOf(
+        address account
+    ) public view returns (Geolocation memory) {
         return _registry[account];
     }
 

@@ -17,11 +17,14 @@ contract Token is ERC7818Whitelist, AddressRegistry {
     constructor () ERC7818Whitelist() {}
 
     // `addToWhitelist` and `removeFromWhitelist` inherit from ERC7818Whitelist.
+    
+    // @TODO function to enrolled citizen or merchant address store address and geographical.
+    // @TODO function to unenrolled citizen or merchant address remove address and geographical.
+    // @TODO simple mechanic for merchant to off-ramp token condition.
 
-    // geographical of spender and receiver must overlaying/overlap
+    // @TODO geographical of spender and receiver must overlaying/overlap
     function transfer(address to, uint256 value) public returns (bool) {
-        // require(checkGeographical(msg.sender, to));
-        // handle citizen and merchant balance update
+        // @TODO handle citizen or merchant balance update
     }
 }
 
