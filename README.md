@@ -15,7 +15,7 @@ This is not official source code of 10,000 baht digital project form government.
 
 ### Discuss to Requirement
 
-- Project propose idea to circulate the token _`n`_ times before off-ramp token into cash to ensure the token are being used and helping the economics, maybe it can be changed to other simple and effective idea e.g. restriction period of time and minimum withdraw amount.
+- Project 10,000 baht digital propose idea to circulate the token _`n`_ times before off-ramp token into cash to ensure the token are being used and helping the economics, maybe it can be changed to other simple and effective idea e.g. restriction period of time and minimum withdraw amount.
 
 ### Approach
 
