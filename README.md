@@ -26,4 +26,4 @@ This is not official source code of 10,000 baht digital project form government.
 
 ## Copyright
 
-Copyright 2024 Sirawit Techavanitch. This repository release under the [GPL-3.0](./LICENSE) license
+Copyright 2025 Sirawit Techavanitch. This repository release under the [GPL-3.0](./LICENSE) license
