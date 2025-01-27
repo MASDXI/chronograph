@@ -6,61 +6,62 @@ pragma solidity >=0.8.0 <0.9.0;
  * @author Sirawit Techavanitch
  */
 
-import {Geographical} from "./Geographical.sol";
+import {Circle2D as Circle} from "./Circle2D.sol";
 
 abstract contract AddressRegistry {
-    using Geographical for uint256;
-
-    struct Geolocation {
-        uint256 latitude;
-        uint256 longitude;
-    }
+    using Circle for Circle.Circle;
 
     /** errors */
-    // @TODO declare custom error
+    error AddressGeolocateExists();
+    error AddressGeolocateNotExists();
 
     /** events */
     event AddressGeolocateMapped(
         address indexed account,
-        uint256 latitude,
-        uint256 longitude
+        int32 latitude,
+        int32 longitude
     );
+
     event AddressGeolocateUnmapped(address indexed account);
 
-    mapping(address => Geolocation) private _registry;
+    mapping(address => Circle.Circle) private _registry;
 
     function _addToRegistry(
         address account,
-        Geolocation memory geolocate
+        Circle.Circle memory geolocate
     ) internal {
-        Geolocation memory geolocateCache = _registry[account];
-        if (geolocateCache.latitude == 0 && geolocateCache.longitude == 0) {
+        Circle.Circle memory geolocateCache = _registry[account];
+        if (geolocateCache.x == 0 && geolocateCache.y == 0) {
             _registry[account] = geolocate;
-            emit AddressGeolocateMapped(
-                account,
-                geolocate.latitude,
-                geolocate.longitude
-            );
+
+            emit AddressGeolocateMapped(account, geolocate.x, geolocate.y);
         } else {
-            // @TODO revert
+            revert AddressGeolocateExists();
         }
     }
 
     function _removeFromRegistry(address account) internal {
-        Geolocation memory geolocateCache = _registry[account];
-        if (geolocateCache.latitude == 0 && geolocateCache.longitude == 0) {
-            // @TODO revert
+        Circle.Circle memory geolocateCache = _registry[account];
+        if (geolocateCache.x == 0 && geolocateCache.y == 0) {
+            revert AddressGeolocateNotExists();
         } else {
             delete _registry[account];
+            
             emit AddressGeolocateUnmapped(account);
         }
     }
 
     function geolocateOf(
         address account
-    ) public view returns (Geolocation memory) {
+    ) public view returns (Circle.Circle memory) {
         return _registry[account];
     }
 
-    // some internal helper function below.
+    function contain(address a, address b) public view returns (bool) {
+        return _registry[a].contain(_registry[b]);
+    }
+
+    function overlap(address a, address b) public view returns (bool) {
+        return _registry[a].overlap(_registry[b]);
+    }
 }
