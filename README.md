@@ -25,7 +25,7 @@ _Note: Not sure that Merchant applied the same rule as in the citizen._
 
 - Citizen balance independently manage by the [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818).
 - Merchant balance are `whitelisted` and all balance under merchant will be `non-expire`.
-- Citizen and Merchant `geographical` tight to the citizen blockchain address in `Circle2D`.
+- Citizen and Merchant `geographical` tight to the blockchain address in `Circle2D`.
 
 ## Copyright
 
