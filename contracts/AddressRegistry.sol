@@ -46,7 +46,7 @@ abstract contract AddressRegistry {
             revert AddressGeolocateNotExists();
         } else {
             delete _registry[account];
-            
+
             emit AddressGeolocateUnmapped(account);
         }
     }
