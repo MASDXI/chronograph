@@ -8,13 +8,13 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {ERC20EXPBase} from "@kiwarilabs/contracts/tokens/ERC20/ERC20EXPBase.sol";
 import {ERC20BLSW} from "@kiwarilabs/contracts/tokens/ERC20/ERC20BLSW.sol";
-import {ERC7818Whitelist} from "@kiwarilabs/contracts/tokens/ERC20/extensions/ERC7818Whitelist.sol";
+import {ERC7818Exception} from "@kiwarilabs/contracts/tokens/ERC20/extensions/ERC7818Exception.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {AddressRegistry} from "./AddressRegistry.sol";
 // @TODO some simple ownable
 
-contract DigitalToken is ERC20BLSW, ERC7818Whitelist, AddressRegistry {
+contract DigitalToken is ERC20BLSW, ERC7818Exception, AddressRegistry {
     uint8 public radius;
 
     /** errors */
@@ -25,14 +25,14 @@ contract DigitalToken is ERC20BLSW, ERC7818Whitelist, AddressRegistry {
     // if from is citizen, to must be merchant
     // if from is merchant, to must be merchant
     modifier isNotC2C(address from, address from) {
-        if (!isWhitelist(from) && !isWhitelist(from)) {
+        if (!isExceptionList(from) && !isExceptionList(from)) {
             revert DigitalTokenNotAllowC2C();
         }
         _;
     }
 
     modifier isNotB2C(address from, address from) {
-        if (isWhitelist(from) && !isWhitelist(to)) {
+        if (isExceptionList(from) && !isExceptionList(to)) {
             revert DigitalTokeNotAllowB2C();
         }
         _;
@@ -45,7 +45,7 @@ contract DigitalToken is ERC20BLSW, ERC7818Whitelist, AddressRegistry {
         uint8 windowSize_,
         uint8 radius_
     )
-        ERC7818Whitelist(
+        ERC7818Exception(
             _name,
             _symbol,
             block.number,
@@ -142,22 +142,22 @@ contract DigitalToken is ERC20BLSW, ERC7818Whitelist, AddressRegistry {
     // @TODO onlyOwner
     function enroll(address account, int32 x, int32 y, bool merchant) public {
         if (merchant) {
-            _addToWhitelist(account);
+            _addToExceptionList(account);
         }
         _addToRegistry(account, Circle2D.Circle(x, y, radius));
     }
 
     // @TODO onlyOwner
     function unenroll(address account, int32 x, int32 y) public {
-        if (isWhitelist(account)) {
-            _removeFromWhitelist(account);
+        if (isExceptionListList(account)) {
+            _removeFromExceptionList(account);
         }
         _removeFromRegistry(account);
     }
 
     // @TODO onlyOwner simple mechanic for merchant to off-ramp token condition.
     function cashout(address account) public {
-        // isWhitelist(account)
+        // isExceptionList(account)
         // emit
     }
 
