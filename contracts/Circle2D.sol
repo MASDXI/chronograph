@@ -36,10 +36,7 @@ library Circle2D {
         return (TWO * PI) * self.r;
     }
 
-    function contain(
-        Circle storage self,
-        Circle memory circle
-    ) internal view returns (bool) {
+    function contain(Circle storage self, Circle memory circle) internal view returns (bool) {
         // @TODO
         // uint value = Math.sqrt(((self.x - circle.x) ** TWO) + (self.y - self.y ** TWO));
         // value + circle.r == self.r
@@ -47,10 +44,7 @@ library Circle2D {
         return false;
     }
 
-    function overlap(
-        Circle storage self,
-        Circle memory circle
-    ) internal view returns (bool) {
+    function overlap(Circle storage self, Circle memory circle) internal view returns (bool) {
         // @TODO
         // not lie completely touch the circumference or intersection only
         return false;

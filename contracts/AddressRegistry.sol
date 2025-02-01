@@ -16,20 +16,13 @@ abstract contract AddressRegistry {
     error AddressGeolocateNotExists();
 
     /** events */
-    event AddressGeolocateMapped(
-        address indexed account,
-        int32 latitude,
-        int32 longitude
-    );
+    event AddressGeolocateMapped(address indexed account, int32 latitude, int32 longitude);
 
     event AddressGeolocateUnmapped(address indexed account);
 
     mapping(address => Circle.Circle) private _registry;
 
-    function _addToRegistry(
-        address account,
-        Circle.Circle memory geolocate
-    ) internal {
+    function _addToRegistry(address account, Circle.Circle memory geolocate) internal {
         Circle.Circle memory geolocateCache = _registry[account];
         if (geolocateCache.x == 0 && geolocateCache.y == 0) {
             _registry[account] = geolocate;
@@ -51,9 +44,7 @@ abstract contract AddressRegistry {
         }
     }
 
-    function geolocateOf(
-        address account
-    ) public view returns (Circle.Circle memory) {
+    function geolocateOf(address account) public view returns (Circle.Circle memory) {
         return _registry[account];
     }
 
