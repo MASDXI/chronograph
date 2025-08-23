@@ -12,7 +12,7 @@
             "files": "*.sol",
             "options": {
                 "parser": "solidity-parse",
-                "printWidth": 140,
+                "printWidth": 98,
                 "tabWidth": 4,
                 "useTabs": false,
                 "singleQuote": false,
