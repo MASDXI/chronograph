@@ -1,5 +1,10 @@
 # Chronograph
 
+<h1 align="center">
+<img src="./assets/banner.png" width="450"/>
+</h1>
+
+
 Chronograph project is trying to build [10,000 baht digital](https://www.bangkokpost.com/topics/2666628/10-000-baht-digital-money-handout) with [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818).
 
 ## Disclaimer
