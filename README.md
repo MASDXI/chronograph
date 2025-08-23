@@ -6,7 +6,7 @@
 
 Chronograph project is trying to build [10,000 baht digital](https://digitalwallet.go.th) with [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818).
 
-> [!IMPORTANT] Disclaimer
+> [!Important]
 > This is not official source code of 10,000 baht digital project form government.
 
 ### Requirement
