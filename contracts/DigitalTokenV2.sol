@@ -3,12 +3,12 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
+import {ERC20Capped} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 import {IERC5679} from "./interfaces/IERC5679-ERC20.sol";
 import {IERC6372} from "./interfaces/review-IERC6372.sol";
 
 /// @custom:strict allowed to override _updateTime, _updateRegistry and _updateMerchantToken only.
-abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC6372 {
+abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC5679, IERC6372 {
     uint48 private _startTime;
     uint48 private _endTime;
 
@@ -20,20 +20,6 @@ abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC6372 {
         string memory symbol_,
         uint256 cap_
     ) ERC20(name_, symbol_) ERC20Capped(cap_) {}
-
-    function _beforeTransfer(address from, address to, uint256 amount) internal {
-        if (isTransferPeriod()) {
-            // @TODO
-            // from (Citizen) and to (Citizen) not allowed C2C transfer.
-            // from (Merchant) and to (Citizen) not allowed B2C transfer.
-            // from (Citizen) and to (Merchant) are in same district.
-        }
-    }
-
-    function _afterTransfer(address from, address to, uint256 amount) internal {
-        _burn(to, amount);
-        _merchantDigitalToken.mint(to, amount, "");
-    }
 
     function _updateTime(uint48 startTime, uint48 endTime) internal virtual {
         _startTime = startTime;
@@ -48,11 +34,44 @@ abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC6372 {
         // @TODO emit event
     }
 
-    // @TODO
-    // function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {}
+    // function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
+    // // @TODO emit event
+    // }
+
+    function _beforeTransfer(address from, address to, uint256 amount) internal {
+        if (isTransferable()) {
+            // @TODO
+            // revert when from (Citizen) and to (Citizen) C2C transfer.
+            // revert when (Merchant) and to (Citizen) B2C transfer.
+            // from (Citizen) and to (Merchant) are in same district.
+        }
+    }
+
+    function _afterTransfer(address from, address to, uint256 amount) internal {
+        _burn(to, amount);
+        _merchantDigitalToken.mint(to, amount, "");
+    }
+
+    function _update(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override(ERC20, ERC20Capped) {
+        super._update(from, to, amount);
+    }
 
     function decimals() public pure override returns (uint8) {
         return 6;
+    }
+
+    /// @dev See {IERC5679-mint}.
+    function mint(address to, uint256 amount, bytes calldata data) public virtual override {
+        _mint(to, amount);
+    }
+
+    /// @dev See {IERC5679-burn}.
+    function burn(address from, uint256 amount, bytes calldata data) public virtual override {
+        _burn(from, amount);
     }
 
     function transfer(address to, uint256 amount) public override returns (bool) {

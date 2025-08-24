@@ -9,7 +9,7 @@ import {IERC5679} from "./interfaces/IERC5679-ERC20.sol";
 import {IERC6372} from "./interfaces/review-IERC6372.sol";
 
 /// @custom:strict allowed to override _updateTime, _updateRegistry and _updateMerchantToken only.
-abstract contract DigitalWalletToken is ERC7818, ERC7818Exception {
+abstract contract DigitalWalletToken is IERC5679, ERC7818, ERC7818Exception {
     IERC5679 private _merchantDigitalToken;
     // IAddressRegistry private _addressRegistry;
 
@@ -25,8 +25,8 @@ abstract contract DigitalWalletToken is ERC7818, ERC7818Exception {
 
     function _beforeTransfer(address from, address to, uint256 amount) internal {
         // @TODO
-        // from (Citizen) and to (Citizen) not allowed C2C transfer.
-        // from (Merchant) and to (Citizen) not allowed B2C transfer.
+        // revert when from (Citizen) and to (Citizen) C2C transfer.
+        // revert when (Merchant) and to (Citizen) B2C transfer.
         // from (Citizen) and to (Merchant) are in same district.
     }
 
@@ -42,8 +42,8 @@ abstract contract DigitalWalletToken is ERC7818, ERC7818Exception {
         uint256 amount
     ) internal {
         // @TODO
-        // from (Citizen) and to (Citizen) not allowed C2C transfer.
-        // from (Merchant) and to (Citizen) not allowed B2C transfer.
+        // revert when from (Citizen) and to (Citizen) C2C transfer.
+        // revert when (Merchant) and to (Citizen) B2C transfer.
         // from (Citizen) and to (Merchant) are in same district.
     }
 
@@ -67,11 +67,22 @@ abstract contract DigitalWalletToken is ERC7818, ERC7818Exception {
         // @TODO emit event
     }
 
-    // @TODO
-    // function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {}
-    
+    // function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
+    // // @TODO emit event
+    // }
+
     function decimals() public pure override returns (uint8) {
         return 6;
+    }
+
+    /// @dev See {IERC5679-mint}.
+    function mint(address to, uint256 amount, bytes calldata data) public virtual override {
+        _mint(to, amount);
+    }
+
+    /// @dev See {IERC5679-burn}.
+    function burn(address from, uint256 amount, bytes calldata data) public virtual override {
+        _burn(from, amount);
     }
 
     /// @dev See {IERC6372-clock}.

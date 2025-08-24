@@ -6,43 +6,118 @@ import {IERC5679} from "./interfaces/IERC5679-ERC20.sol";
 
 /// @custom:strict allowed to override _updateRegistry only.
 abstract contract MerchantDigitalToken is ERC20, IERC5679 {
+    uint256 private immutable _cap;
+
+    uint256 private _totalSupply;
+
     // IAddressRegistry private _addressRegistry;
 
     mapping(address => uint256[4]) private _balances;
 
-    constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {}
+    error ERC20ExceededCap(uint256 increasedSupply, uint256 cap);
+    error ERC20InvalidCap(uint256 cap);
 
-    // @TODO
-    // function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {}
+    constructor(string memory name_, string memory symbol_, uint256 cap_) ERC20(name_, symbol_) {
+        if (cap_ == 0) {
+            revert ERC20InvalidCap(0);
+        }
+        _cap = cap_;
+    }
+
+    // function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
+    // // @TODO emit event
+    // }
+
+    function _beforeTransfer(address from, address to, uint256 amount) internal {
+        // @TODO
+        // revert when from (Citizen) and to (Citizen) C2C transfer.
+        // revert when from (Merchant) and to (Citizen) B2C transfer.
+        // from (Citizen) and to (Merchant) are in same district.
+    }
+
+    function _afterTransfer(address from, address to, uint256 amount) internal {
+        // do nothing.
+    }
+
+    function _update(address from, address to, uint256 amount) internal override {
+        if (from == address(0)) {
+            uint256 maxSupply = cap();
+            uint256 supply = totalSupply();
+            if (supply > maxSupply) {
+                revert ERC20ExceededCap(supply, maxSupply);
+            }
+            _balances[to][0] += amount;
+            _totalSupply += amount;
+        } else {
+            if (to == address(0)) {
+                _balances[from][4] -= amount;
+                _totalSupply -= amount;
+            } else {
+                // @TODO transfer rule if current balance at index not enough then next.
+                // spender spend from _balances[][0]
+                // receiver receive to _balances[][1]
+                // if spender spend from _balances[][1]
+                // receiver receive to _balance[][2]
+                // if spender spend from _balances[][2]
+                // receiver receive to _balance[][3]
+                // if spender spend from _balances[][3]
+                // receiver receive to _balance[][4]
+                // if spender spend from _balances[][4]
+                // receiver receive to _balance[][4]
+            }
+        }
+    }
+
+    function cap() public view virtual returns (uint256) {
+        return _cap;
+    }
 
     function decimals() public view override returns (uint8) {
         return 6;
     }
 
+    function totalSupply() public view override returns (uint256) {
+        return _totalSupply;
+    }
+
+    function balanceOf(address account) public view override returns (uint256) {
+        uint256 balance = _balances[account][0];
+        for (uint256 index = 1; index < 4; index++) {
+            balance += _balances[account][index];
+        }
+        return balance;
+    }
+
+    /// @dev retrieve balance that can cash-out/off-ramp.
+    function withdrawableBalanceOf(address account) public view override returns (uint256) {
+        return _balances[account][3];
+    }
+
+    /// @dev See {IERC5679-mint}.
     function mint(address to, uint256 amount, bytes calldata data) public virtual override {
         _mint(to, amount);
     }
 
+    /// @dev See {IERC5679-burn}.
     function burn(address from, uint256 amount, bytes calldata data) public virtual override {
         _burn(from, amount);
     }
 
-    function _update(address to, uint256 amount) public override returns (bool) {
-        // @TODO transfer rule if current balance at index not enough then next.
-        // from (Merchant) and to (Citizen) not allowed B2C transfer.
-        // from (Merchant) and to (Merchant) B2B transfer.
-        // minting mint to _balances[][0] only.
-        // spender spend from _balances[][0]
-        // receiver receive to _balances[][1]
-        // if spender spend from _balances[][1]
-        // receiver receive to _balance[][2]
-        // if spender spend from _balances[][2]
-        // receiver receive to _balance[][3]
-        // if spender spend from _balances[][3]
-        // receiver receive to _balance[][4]
-        // if spender spend from _balances[][4]
-        // receiver receive to _balance[][4]
-        // burning from _balance[][4] only.
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        _beforeTransfer(msg.sender, to, amount);
+        _transfer(msg.sender, to, amount);
+        _afterTransfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public override returns (bool) {
+        _beforeTransfer(from, to, amount);
+        _transfer(from, to, amount);
+        _afterTransfer(from, to, amount);
         return true;
     }
 }

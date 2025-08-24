@@ -1,7 +1,7 @@
 # chronograph
 
 <h1 align="center">
-<img src="./assets/banner.png" width="450"/>
+<img src="./assets/banner.jpeg" width="360"/>
 </h1>
 
 Project Chronograph explores the design of a [10,000 Baht Digital Wallet](https://digitalwallet.go.th) by applying relevant Ethereum standards, including [ERC-6372](https://eips.ethereum.org/EIPS/eip-6372) and [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818).
