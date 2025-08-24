@@ -10,7 +10,7 @@ import {IERC6372} from "./interfaces/review-IERC6372.sol";
 import {IAddressRegistry} from "./interfaces/IAddressRegistry.sol";
 import {TransferError} from "./interfaces/TransferError.sol";
 
-/// @custom:strict allowed to override _updateTime, _updateRegistry and _updateMerchantToken only.
+/// @custom:strict allowed to override _updateRegistry and _updateMerchantToken only.
 abstract contract DigitalWalletToken is IERC5679, ERC7818, ERC7818Exception, TransferError {
     IERC5679 private _merchantDigitalToken;
     IAddressRegistry private _addressRegistry;
@@ -68,15 +68,17 @@ abstract contract DigitalWalletToken is IERC5679, ERC7818, ERC7818Exception, Tra
     }
 
     function _updateMerchantDigitalToken(IERC5679 merchantDigitalToken) internal virtual {
+        address oldMerchantDigitalToken = address(_merchantDigitalToken);
         _merchantDigitalToken = merchantDigitalToken;
 
-        // @TODO emit event
+        // @TODO MerchantDigitalTokenUpdated(oldMerchantDigitalToken, merchantDigitalToken);
     }
 
     function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
+        address oldAddressRegistry = address(_addressRegistry);
         _addressRegistry = addressRegistry;
-        
-        // @TODO emit event
+
+        // @TODO AddressRegistryUpdated(oldAddressRegistry, addressRegistry);
     }
 
     function decimals() public pure override returns (uint8) {

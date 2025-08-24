@@ -17,6 +17,9 @@ abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC5679, IERC6372
     IERC5679 private _merchantDigitalToken;
     IAddressRegistry private _addressRegistry;
 
+    error InvalidStartTime(uint48 startTime, uint48 endTime);
+    error InvalidTime();
+
     constructor(
         string memory name_,
         string memory symbol_,
@@ -24,22 +27,32 @@ abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC5679, IERC6372
     ) ERC20(name_, symbol_) ERC20Capped(cap_) {}
 
     function _updateTime(uint48 startTime, uint48 endTime) internal virtual {
+        if (startTime == 0 || endTime == 0) {
+            revert InvalidTime();
+        }
+        if (startTime < endTime) {
+            revert InvalidStartTime(startTime, endTime);
+        }
+        uint48 oldStartTime = startTime;
+        uint48 oldEndTime = endTime;
         _startTime = startTime;
         _endTime = endTime;
 
-        // @TODO emit event
+        // @TODO ActiveTimeUpdated(oldStartTime, oldEndTime, startTime, endTime);
     }
 
     function _updateMerchantDigitalToken(IERC5679 merchantDigitalToken) internal virtual {
+        address oldMerchantDigitalToken = address(_merchantDigitalToken);
         _merchantDigitalToken = merchantDigitalToken;
 
-        // @TODO emit event
+        // @TODO MerchantDigitalTokenUpdated(oldMerchantDigitalToken, merchantDigitalToken);
     }
 
     function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
+        address oldAddressRegistry = address(_addressRegistry);
         _addressRegistry = addressRegistry;
-        
-        // @TODO emit event
+
+        // @TODO AddressRegistryUpdated(oldAddressRegistry, addressRegistry);
     }
 
     function _beforeTransfer(address from, address to, uint256 amount) internal {

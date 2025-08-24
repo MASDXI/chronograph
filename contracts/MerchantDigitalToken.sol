@@ -9,7 +9,6 @@ import {TransferError} from "./interfaces/TransferError.sol";
 /// @custom:strict allowed to override _updateRegistry only.
 abstract contract MerchantDigitalToken is ERC20, IERC5679, TransferError {
     uint256 private immutable _cap;
-
     uint256 private _totalSupply;
 
     IAddressRegistry private _addressRegistry;
@@ -27,9 +26,10 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679, TransferError {
     }
 
     function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
+        address oldAddressRegistry = address(_addressRegistry);
         _addressRegistry = addressRegistry;
-        
-        // @TODO emit event
+
+        // @TODO AddressRegistryUpdated(oldAddressRegistry, addressRegistry);
     }
 
     function _beforeTransfer(address from, address to, uint256 amount) internal {
@@ -42,6 +42,11 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679, TransferError {
         // @TODO something should do after transfer?
     }
 
+    /// @dev _update to handle token transfers with circulation tracking.
+    /// Cash-out timing is non-deterministic as it depends on merchant spending patterns.
+    /// Tokens must circulate through the merchant network at least 3 times before becoming
+    /// withdrawable. The actual time to reach withdrawable status varies based on how
+    /// frequently merchants transact with each other in the local economy.
     function _update(address from, address to, uint256 amount) internal override {
         if (from == address(0)) {
             uint256 maxSupply = cap();
@@ -53,22 +58,33 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679, TransferError {
             _totalSupply += amount;
         } else {
             if (to == address(0)) {
+                uint256 value = _balances[from][3];
+                if (value < amount) {
+                    revert ERC20InsufficientBalance(from, value, amount);
+                }
                 _balances[from][3] -= amount;
                 _totalSupply -= amount;
             } else {
-                // @TODO transfer rule if current balance at index not enough then next.
-                // spender spend from _balances[][0]
-                // receiver receive to _balances[][1]
-                // if spender spend from _balances[][1]
-                // receiver receive to _balance[][2]
-                // if spender spend from _balances[][2]
-                // receiver receive to _balance[][3]
-                // if spender spend from _balances[][3]
-                // receiver receive to _balance[][4]
-                // if spender spend from _balances[][4]
-                // receiver receive to _balance[][4]
+                uint256 value = balanceOf(from);
+                if (value < amount) {
+                    revert ERC20InsufficientBalance(from, value, amount);
+                }
+                uint256 remaining = amount;
+                uint256 index;
+                while (remaining > 0) {
+                    uint256 available = _balances[from][index];
+                    if (available > 0) {
+                        uint256 deductValue = remaining > available ? remaining : remaining;
+                        _balances[from][index] -= deductValue;
+                        uint256 toIndex = index + 1 > 3 ? 3 : index + 1;
+                        _balances[to][toIndex] += deductValue;
+                        remaining -= deductValue;
+                    }
+                }
             }
         }
+
+        emit Transfer(from, to, amount);
     }
 
     function cap() public view virtual returns (uint256) {
