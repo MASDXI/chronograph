@@ -3,19 +3,23 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 import {IERC5679} from "./interfaces/IERC5679-ERC20.sol";
 import {IERC6372} from "./interfaces/review-IERC6372.sol";
 
 /// @custom:strict allowed to override _updateTime, _updateRegistry and _updateMerchantToken only.
-abstract contract DigitalWalletTokenLite is ERC20, IERC6372 {
+abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC6372 {
     uint48 private _startTime;
     uint48 private _endTime;
 
-    IERC5679 private _merchantToken;
+    IERC5679 private _merchantDigitalToken;
+    // IAddressRegistry private _addressRegistry;
 
-    // @TODO AddressRegistry;
-
-    constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {}
+    constructor(
+        string memory name_,
+        string memory symbol_,
+        uint256 cap_
+    ) ERC20(name_, symbol_) ERC20Capped(cap_) {}
 
     function _beforeTransfer(address from, address to, uint256 amount) internal {
         if (isTransferPeriod()) {
@@ -28,7 +32,7 @@ abstract contract DigitalWalletTokenLite is ERC20, IERC6372 {
 
     function _afterTransfer(address from, address to, uint256 amount) internal {
         _burn(to, amount);
-        _merchantToken.mint(to, amount, "");
+        _merchantDigitalToken.mint(to, amount, "");
     }
 
     function _updateTime(uint48 startTime, uint48 endTime) internal virtual {
@@ -38,14 +42,18 @@ abstract contract DigitalWalletTokenLite is ERC20, IERC6372 {
         // @TODO emit event
     }
 
-    function _updateMerchantToken(IERC5679 merchantToken) internal virtual {
-        _merchantToken = merchantToken;
+    function _updateMerchantDigitalToken(IERC5679 merchantDigitalToken) internal virtual {
+        _merchantDigitalToken = merchantDigitalToken;
 
         // @TODO emit event
     }
 
     // @TODO
     // function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {}
+
+    function decimals() public pure override returns (uint8) {
+        return 6;
+    }
 
     function transfer(address to, uint256 amount) public override returns (bool) {
         _beforeTransfer(msg.sender, to, amount);

@@ -10,9 +10,8 @@ import {IERC6372} from "./interfaces/review-IERC6372.sol";
 
 /// @custom:strict allowed to override _updateTime, _updateRegistry and _updateMerchantToken only.
 abstract contract DigitalWalletToken is ERC7818, ERC7818Exception {
-    IERC5679 private _merchantToken;
-
-    // @TODO AddressRegistry;
+    IERC5679 private _merchantDigitalToken;
+    // IAddressRegistry private _addressRegistry;
 
     constructor(
         string memory name_,
@@ -21,7 +20,7 @@ abstract contract DigitalWalletToken is ERC7818, ERC7818Exception {
     ) ERC7818(name_, symbol_, block.timestamp, 15778458, 1, false) {
         // epoch duration is 6 months 15_778_458 seconds
         // window size 1 epoch
-        _merchantToken = MerchantToken_;
+        _merchantDigitalToken = MerchantToken_;
     }
 
     function _beforeTransfer(address from, address to, uint256 amount) internal {
@@ -33,7 +32,7 @@ abstract contract DigitalWalletToken is ERC7818, ERC7818Exception {
 
     function _afterTransfer(address from, address to, uint256 amount) internal {
         _burnFromException(to, amount);
-        _merchantToken.mint(to, amount, "");
+        _merchantDigitalToken.mint(to, amount, "");
     }
 
     function _beforeTransferAtEpoch(
@@ -55,15 +54,15 @@ abstract contract DigitalWalletToken is ERC7818, ERC7818Exception {
         uint256 amount
     ) internal {
         _burnFromException(to, amount);
-        _merchantToken.mint(to, amount, "");
+        _merchantDigitalToken.mint(to, amount, "");
     }
 
     function _pointerProvider() internal view override returns (uint256) {
         return block.timestamp;
     }
 
-    function _updateMerchantToken(IERC5679 merchantToken) internal virtual {
-        _merchantToken = merchantToken;
+    function _updateMerchantDigitalToken(IERC5679 merchantDigitalToken) internal virtual {
+        _merchantDigitalToken = merchantDigitalToken;
 
         // @TODO emit event
     }

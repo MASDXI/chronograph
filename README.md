@@ -25,12 +25,16 @@ Two possible approaches are considered for managing the token life span
 #### [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818) Approach
  - Supports per-user issuance, meaning each citizen’s 6-month validity period begins at the time of receipt.
  - Suitable if on-boarding occurs at different times.
+  
+<!-- overview architect diagram -->
 
 #### [ERC-6372](https://eips.ethereum.org/EIPS/eip-6372) Approach
 
 - Instead of expiring tokens, the token itself has no lifespan.
 Transferability is restricted within a defined period using time-based clocks.
 - Ensures all citizens share the same start and end date for usability.
+
+<!-- overview architect diagram -->
 
 #### Additional Rules
 - Tokens held by citizens **MUST NOT** be transferable from one citizen to another.
