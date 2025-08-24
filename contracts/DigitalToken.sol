@@ -105,6 +105,7 @@ abstract contract DigitalWalletToken is IERC5679, ERC7818, ERC7818Exception, Tra
         return string.concat("mode=timestamp&from=eip155:", Strings.toString(block.chainid));
     }
 
+    /// @dev epochType match with CLOCK_MODE
     function epochType() public pure override returns (EPOCH_TYPE) {
         return EPOCH_TYPE.TIME_BASED;
     }

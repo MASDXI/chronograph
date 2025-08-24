@@ -127,6 +127,7 @@ abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC5679, IERC6372
         return _endTime;
     }
 
+    /// @dev if true citizen can transfer, otherwise not.
     function isTransferable() public view returns (bool) {
         return clock() >= _startTime && clock() <= _endTime;
     }
