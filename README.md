@@ -1,10 +1,10 @@
-# chronograph
+# chronograph-evm
 
 <h1 align="center">
 <img src="./assets/banner.jpeg" width="360"/>
 </h1>
 
-Project Chronograph explores the design of a [10,000 Baht Digital Wallet](https://digitalwallet.go.th) by applying relevant Ethereum standards, including [ERC-6372](https://eips.ethereum.org/EIPS/eip-6372) and [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818).
+Project `chronograph-evm` explores the design of a [10,000 Baht Digital Wallet](https://digitalwallet.go.th) by applying relevant Ethereum standards, including [ERC-6372](https://eips.ethereum.org/EIPS/eip-6372) and [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818).
 
 > [!Important]
 > This is not official source code of Digital Wallet Project form government.
@@ -54,4 +54,4 @@ Transferability is restricted within a defined period using time-based clocks.
 
 ## Copyright
 
-Copyright 2025 Sirawit Techavanitch. This repository release under the [GPL-3.0](./LICENSE) license
+`chronograph-evm` Copyright 2025 Sirawit Techavanitch. This repository release under the [GPL-3.0](./LICENSE) license
