@@ -3,14 +3,16 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC5679} from "./interfaces/IERC5679-ERC20.sol";
+import {IAddressRegistry} from "./interfaces/IAddressRegistry.sol";
+import {TransferError} from "./interfaces/TransferError.sol";
 
 /// @custom:strict allowed to override _updateRegistry only.
-abstract contract MerchantDigitalToken is ERC20, IERC5679 {
+abstract contract MerchantDigitalToken is ERC20, IERC5679, TransferError {
     uint256 private immutable _cap;
 
     uint256 private _totalSupply;
 
-    // IAddressRegistry private _addressRegistry;
+    IAddressRegistry private _addressRegistry;
 
     mapping(address => uint256[4]) private _balances;
 
@@ -24,19 +26,20 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679 {
         _cap = cap_;
     }
 
-    // function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
-    // // @TODO emit event
-    // }
+    function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
+        _addressRegistry = addressRegistry;
+        
+        // @TODO emit event
+    }
 
     function _beforeTransfer(address from, address to, uint256 amount) internal {
-        // @TODO
-        // revert when from (Citizen) and to (Citizen) C2C transfer.
-        // revert when from (Merchant) and to (Citizen) B2C transfer.
-        // from (Citizen) and to (Merchant) are in same district.
+        if (!(_addressRegistry.isMerchant(from) && _addressRegistry.isMerchant(to))) {
+            revert InvalidTransferType(TRANSFER_ERROR_TYPE.NON_MERCHANT);
+        }
     }
 
     function _afterTransfer(address from, address to, uint256 amount) internal {
-        // do nothing.
+        // @TODO something should do after transfer?
     }
 
     function _update(address from, address to, uint256 amount) internal override {
@@ -50,7 +53,7 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679 {
             _totalSupply += amount;
         } else {
             if (to == address(0)) {
-                _balances[from][4] -= amount;
+                _balances[from][3] -= amount;
                 _totalSupply -= amount;
             } else {
                 // @TODO transfer rule if current balance at index not enough then next.
@@ -89,7 +92,7 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679 {
     }
 
     /// @dev retrieve balance that can cash-out/off-ramp.
-    function withdrawableBalanceOf(address account) public view override returns (uint256) {
+    function withdrawableBalanceOf(address account) public view returns (uint256) {
         return _balances[account][3];
     }
 

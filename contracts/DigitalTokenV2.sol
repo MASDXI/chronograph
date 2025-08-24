@@ -6,14 +6,16 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Capped} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 import {IERC5679} from "./interfaces/IERC5679-ERC20.sol";
 import {IERC6372} from "./interfaces/review-IERC6372.sol";
+import {IAddressRegistry} from "./interfaces/IAddressRegistry.sol";
+import {TransferError} from "./interfaces/TransferError.sol";
 
 /// @custom:strict allowed to override _updateTime, _updateRegistry and _updateMerchantToken only.
-abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC5679, IERC6372 {
+abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC5679, IERC6372, TransferError {
     uint48 private _startTime;
     uint48 private _endTime;
 
     IERC5679 private _merchantDigitalToken;
-    // IAddressRegistry private _addressRegistry;
+    IAddressRegistry private _addressRegistry;
 
     constructor(
         string memory name_,
@@ -34,16 +36,18 @@ abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC5679, IERC6372
         // @TODO emit event
     }
 
-    // function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
-    // // @TODO emit event
-    // }
+    function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
+        _addressRegistry = addressRegistry;
+        
+        // @TODO emit event
+    }
 
     function _beforeTransfer(address from, address to, uint256 amount) internal {
-        if (isTransferable()) {
-            // @TODO
-            // revert when from (Citizen) and to (Citizen) C2C transfer.
-            // revert when (Merchant) and to (Citizen) B2C transfer.
-            // from (Citizen) and to (Merchant) are in same district.
+        if (!(_addressRegistry.isCitizen(from) && _addressRegistry.isMerchant(to))) {
+            revert InvalidTransferType(TRANSFER_ERROR_TYPE.NON_CITIZEN);
+        }
+        if (_addressRegistry.locationId(from) != _addressRegistry.locationId(to)) {
+            revert InvalidTransferType(TRANSFER_ERROR_TYPE.OUT_OF_AREA);
         }
     }
 

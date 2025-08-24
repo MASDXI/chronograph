@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.8.0 <0.9.0;
 
 /// @title ERC-6372 interface
 /// @dev An interface for exposing a contract's clock value and details.
