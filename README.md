@@ -25,8 +25,6 @@ Two possible approaches are considered for managing the token life span
 #### [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818) Approach
  - Supports per-user issuance, meaning each citizen’s 6-month validity period begins at the time of receipt.
  - Suitable if on-boarding occurs at different times.
-  
-<!-- overview architect diagram -->
 
 #### [ERC-6372](https://eips.ethereum.org/EIPS/eip-6372) Approach
 
@@ -34,7 +32,25 @@ Two possible approaches are considered for managing the token life span
 Transferability is restricted within a defined period using time-based clocks.
 - Ensures all citizens share the same start and end date for usability.
 
-<!-- overview architect diagram -->
+<h1 align="center">
+<img src="./assets/transfer-flow.png"/>
+</h1>
+
+When citizen transfer Digital Token to merchant expirable token will be burned and minting Merchant Digital Token to merchant at index [0] balance of merchant
+
+<h1 align="center">
+<img src="./assets/merc-transfer-flow.png"/>
+</h1>
+
+When merchants transfer tokens between each other, the circulation index increases to track spending cycles
+
+```
+Transfer Cycle 0: Burning Digital Token → Mint Merchant Digital Token
+Transfer Cycle 1: Spender balance[0] → Receiver balance[1]
+Transfer Cycle 2: Spender balance[1] → Receiver balance[2]  
+Transfer Cycle 3: Spender balance[2] → Receiver balance[3]
+Transfer Cycle 4+: Spender balance[3] → Receiver balance[3] (stays at final tier)
+```
 
 #### Additional Rules
 - Tokens held by citizens **MUST NOT** be transferable from one citizen to another.
