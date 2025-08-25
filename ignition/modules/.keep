@@ -1,0 +1,9 @@
+// deploying sequence
+// deploy AddressRegistry
+// deploy FrozenRegistry
+// deploy DigitalToken with AddressRegistry, FrozenRegistry Contract Address in constructor.
+// deploy MerchantDigitalToken with AddressRegistry, FrozenRegistry Contract Address in constructor.
+
+// init
+// update MerchantDigitalToken Contract Address on DigitalToken contract.
+// update Issuer with DigitalToken Contract Address on MerchantDigitalToken contract.

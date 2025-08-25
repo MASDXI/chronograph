@@ -2,5 +2,5 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 interface LogAddress {
-    event Log(address oldAddress, address newAddress);
+    event Log(string topic, address oldAddress, address newAddress);
 }

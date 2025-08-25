@@ -4,13 +4,14 @@ pragma solidity >=0.8.0 <0.9.0;
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Capped} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
-import {IERC5679Ext20 as IERC5679} from "./interfaces/IERC5679.sol";
-import {IERC6372} from "./interfaces/review-IERC6372.sol";
-import {IAddressRegistry} from "./interfaces/IAddressRegistry.sol";
-import {TransferError} from "./exception/TransferError.sol";
-import {LogAddress} from "./utils/LogAddress.sol";
+import {IERC5679Ext20 as IERC5679} from "../interfaces/IERC5679.sol";
+import {IERC6372} from "../interfaces/review-IERC6372.sol";
+import {IAddressRegistry} from "../interfaces/compliance/IAddressRegistry.sol";
+import {IFrozenRegistry} from "../interfaces/compliance/IFrozenRegistry.sol";
+import {TransferError} from "../exception/TransferError.sol";
+import {LogAddress} from "../utils/LogAddress.sol";
 
-abstract contract DigitalWalletTokenV2 is
+abstract contract DigitalTokenV2 is
     ERC20,
     ERC20Capped,
     IERC5679,
@@ -25,6 +26,7 @@ abstract contract DigitalWalletTokenV2 is
 
     IERC5679 private _merchantDigitalToken;
     IAddressRegistry private _addressRegistry;
+    IFrozenRegistry private _frozenRegistry;
 
     Timestamp private _Timestamp;
 
@@ -61,17 +63,31 @@ abstract contract DigitalWalletTokenV2 is
         address oldMerchantDigitalToken = address(_merchantDigitalToken);
         _merchantDigitalToken = merchantDigitalToken;
 
-        emit Log(oldMerchantDigitalToken, address(merchantDigitalToken));
+        emit Log(
+            "merchant_digital_token",
+            oldMerchantDigitalToken,
+            address(merchantDigitalToken)
+        );
     }
 
     function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
         address oldAddressRegistry = address(_addressRegistry);
         _addressRegistry = addressRegistry;
 
-        emit Log(oldAddressRegistry, address(addressRegistry));
+        emit Log("address_registry", oldAddressRegistry, address(addressRegistry));
+    }
+
+    function _updateFrozenRegistry(IFrozenRegistry frozenRegistry) internal {
+        address oldFrozenRegistry = address(frozenRegistry);
+        _frozenRegistry = frozenRegistry;
+
+        emit Log("frozen_registry", oldFrozenRegistry, address(frozenRegistry));
     }
 
     function _beforeTransfer(address from, address to, uint256 amount) internal virtual {
+        if (_frozenRegistry.isFrozen(from) || _frozenRegistry.isFrozen(to)) {
+            revert InvalidTransferType(TRANSFER_ERROR_TYPE.RESERVED01);
+        }
         if (!(_addressRegistry.isCitizen(from) && _addressRegistry.isMerchant(to))) {
             revert InvalidTransferType(TRANSFER_ERROR_TYPE.NON_CITIZEN);
         }
@@ -97,16 +113,6 @@ abstract contract DigitalWalletTokenV2 is
         return 6;
     }
 
-    /// @dev See {IERC5679-mint}.
-    function mint(address to, uint256 amount, bytes calldata data) public virtual override {
-        _mint(to, amount);
-    }
-
-    /// @dev See {IERC5679-burn}.
-    function burn(address from, uint256 amount, bytes calldata data) public virtual override {
-        _burn(from, amount);
-    }
-
     function transfer(address to, uint256 amount) public override returns (bool) {
         _beforeTransfer(msg.sender, to, amount);
         _transfer(msg.sender, to, amount);
@@ -123,6 +129,16 @@ abstract contract DigitalWalletTokenV2 is
         _transfer(from, to, amount);
         _afterTransfer(from, to, amount);
         return true;
+    }
+
+    /// @dev See {IERC5679-mint}.
+    function mint(address to, uint256 amount, bytes calldata data) public virtual override {
+        _mint(to, amount);
+    }
+
+    /// @dev See {IERC5679-burn}.
+    function burn(address from, uint256 amount, bytes calldata data) public virtual override {
+        _burn(from, amount);
     }
 
     /// @dev See {IERC6372-clock}.

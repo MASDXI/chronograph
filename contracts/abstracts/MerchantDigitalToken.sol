@@ -2,16 +2,20 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC5679Ext20 as IERC5679} from "./interfaces/IERC5679.sol";
-import {IAddressRegistry} from "./interfaces/IAddressRegistry.sol";
-import {TransferError} from "./exception/TransferError.sol";
-import {LogAddress} from "./utils/LogAddress.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC2980} from "../interfaces/stagnant-IERC2980.sol";
+import {IERC5679Ext20 as IERC5679} from "../interfaces/IERC5679.sol";
+import {IAddressRegistry} from "../interfaces/compliance/IAddressRegistry.sol";
+import {IFrozenRegistry} from "../interfaces/compliance/IFrozenRegistry.sol";
+import {TransferError} from "../exception/TransferError.sol";
+import {LogAddress} from "../utils/LogAddress.sol";
 
-abstract contract MerchantDigitalToken is ERC20, IERC5679, LogAddress, TransferError {
+abstract contract MerchantDigitalToken is ERC20, IERC2980, IERC5679, LogAddress, TransferError {
     uint256 private immutable _cap;
     uint256 private _totalSupply;
 
     IAddressRegistry private _addressRegistry;
+    IFrozenRegistry private _frozenRegistry;
 
     mapping(address => uint256[4]) private _balances;
 
@@ -29,11 +33,21 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679, LogAddress, TransferE
         address oldAddressRegistry = address(_addressRegistry);
         _addressRegistry = addressRegistry;
 
-        emit Log(oldAddressRegistry, address(addressRegistry));
+        emit Log("address_registry", oldAddressRegistry, address(addressRegistry));
+    }
+
+    function _updateFrozenRegistry(IFrozenRegistry frozenRegistry) internal {
+        address oldFrozenRegistry = address(frozenRegistry);
+        _frozenRegistry = frozenRegistry;
+
+        emit Log("frozen_registry", oldFrozenRegistry, address(frozenRegistry));
     }
 
     function _beforeTransfer(address from, address to, uint256 amount) internal virtual {
-        if (!(_addressRegistry.isMerchant(from) && _addressRegistry.isMerchant(to))) {
+        if ((frozenlist(from) || frozenlist(to))) {
+            revert InvalidTransferType(TRANSFER_ERROR_TYPE.RESERVED01);
+        }
+        if (!(whitelist(from) && whitelist(to))) {
             revert InvalidTransferType(TRANSFER_ERROR_TYPE.NON_MERCHANT);
         }
     }
@@ -95,11 +109,11 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679, LogAddress, TransferE
         return 6;
     }
 
-    function totalSupply() public view override returns (uint256) {
+    function totalSupply() public view override(ERC20, IERC20) returns (uint256) {
         return _totalSupply;
     }
 
-    function balanceOf(address account) public view override returns (uint256) {
+    function balanceOf(address account) public view override(ERC20, IERC20) returns (uint256) {
         uint256 balance = _balances[account][0];
         for (uint256 index = 1; index < 4; index++) {
             balance += _balances[account][index];
@@ -107,9 +121,32 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679, LogAddress, TransferE
         return balance;
     }
 
-    /// @dev retrieve balance that can cash-out/off-ramp.
-    function withdrawableBalanceOf(address account) public view returns (uint256) {
-        return _balances[account][3];
+    function transfer(address to, uint256 amount) public override(ERC20, IERC20) returns (bool) {
+        _beforeTransfer(msg.sender, to, amount);
+        _transfer(msg.sender, to, amount);
+        _afterTransfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public override(ERC20, IERC20) returns (bool) {
+        _beforeTransfer(from, to, amount);
+        _transfer(from, to, amount);
+        _afterTransfer(from, to, amount);
+        return true;
+    }
+
+    /// @dev See {IERC2920.frozenlist}.
+    function frozenlist(address account) public view returns (bool) {
+        return _frozenRegistry.isFrozen(account);
+    }
+
+    /// @dev See {IERC2920.whitelist}.
+    function whitelist(address account) public view returns (bool) {
+        return _addressRegistry.isMerchant(account);
     }
 
     /// @dev See {IERC5679-mint}.
@@ -122,21 +159,8 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679, LogAddress, TransferE
         _burn(from, amount);
     }
 
-    function transfer(address to, uint256 amount) public override returns (bool) {
-        _beforeTransfer(msg.sender, to, amount);
-        _transfer(msg.sender, to, amount);
-        _afterTransfer(msg.sender, to, amount);
-        return true;
-    }
-
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) public override returns (bool) {
-        _beforeTransfer(from, to, amount);
-        _transfer(from, to, amount);
-        _afterTransfer(from, to, amount);
-        return true;
+    /// @dev retrieve balance that can cash-out/off-ramp.
+    function withdrawableBalanceOf(address account) public view returns (uint256) {
+        return _balances[account][3];
     }
 }
