@@ -11,6 +11,13 @@ contract AddressRegistry is AddressRegistryError, IAddressRegistry, Ownable {
     mapping(address => bool) private _merchantList;
     mapping(address => bytes32) private _locationList;
 
+    event AddedToCitizenList(address indexed caller, address indexed account);
+    event RemovedFromCitizenList(address indexed caller, address indexed account);
+    event AddedToMerchantList(address indexed caller, address indexed account);
+    event RemovedFromMerchantList(address indexed caller, address indexed account);
+
+    error InvalidLocation();
+
     constructor(address owner_) Ownable(owner_) {}
 
     function isCitizen(address account) public view override returns (bool) {
@@ -25,41 +32,73 @@ contract AddressRegistry is AddressRegistryError, IAddressRegistry, Ownable {
         return _locationList[account];
     }
 
+    /// @dev RESERVED01 mean InvalidAddressAlreadyMerchant
     function addAddressToCitizenList(
         address account,
         bytes32 location
     ) public onlyOwner returns (bool) {
-        // @TODO check
+        if (account == address(0)) {
+            revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.INVALID_ADDRESS);
+        }
+        if (location == bytes32(0)) {
+            revert InvalidLocation();
+        }
+        if (isCitizen(account)) {
+            revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.EXIST);
+        }
+        if (isMerchant(account)) {
+            revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.RESERVED01);
+        }
         _citizenList[account] = true;
         _locationList[account] = location;
+
+        emit AddedToCitizenList(msg.sender, account);
+
         return true;
     }
 
     function removeCitizen(address account) public onlyOwner returns (bool) {
-        // @TODO check
+        if (!isCitizen(account)) {
+            revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.NOT_EXIST);
+        }
         delete _citizenList[account];
         delete _locationList[account];
 
-        // @TODO emit 
+        emit RemovedFromCitizenList(msg.sender, account);
 
         return true;
     }
 
+    /// @dev RESERVED02 mean InvalidAddressAlreadyCitizen
     function registerMerchant(address account, bytes32 location) public onlyOwner returns (bool) {
-        // @TODO check
+        if (account == address(0)) {
+            revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.INVALID_ADDRESS);
+        }
+        if (location == bytes32(0)) {
+            revert InvalidLocation();
+        }
+        if (isMerchant(account)) {
+            revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.EXIST);
+        }
+        if (isCitizen(account)) {
+            revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.RESERVED02);
+        }
         _merchantList[account] = true;
         _locationList[account] = location;
 
-        // @TODO emit 
+        emit AddedToMerchantList(msg.sender, account);
 
         return true;
     }
 
     function removeMerchant(address account) public onlyOwner returns (bool) {
+        if (!isMerchant(account)) {
+            revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.NOT_EXIST);
+        }
         delete _merchantList[account];
         delete _locationList[account];
 
-        // @TODO emit 
+        emit RemovedFromMerchantList(msg.sender, account);
 
         return true;
     }

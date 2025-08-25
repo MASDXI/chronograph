@@ -52,6 +52,30 @@ Transfer Cycle 3: Spender balance[2] → Receiver balance[3]
 Transfer Cycle 4+: Spender balance[3] → Receiver balance[3] (stays at final tier)
 ```
 
+### Deployment and Initialization Sequence
+
+1. Deploy Contracts
+   - Deploy `AddressRegistry`.
+   - Deploy `FrozenRegistry`.
+   - Deploy `DigitalWalletToken`, passing the addresses of `AddressRegistry` and `FrozenRegistry` to its constructor.
+   - Deploy `MerchantDigitalToken`, passing the addresses of `AddressRegistry` and `FrozenRegistry` to its constructor.
+
+2. Initialize Contracts
+  - Update the `DigitalWalletToken` contract with the deployed `MerchantDigitalWalletToken` contract address so `DigitalWalletToken` can call mint `MerchantDigitalWalletToken`.
+  - Update the `MerchantDigitalWalletToken` contract with the deployed `DigitalWalletToken` contract address as the issuer.
+
+Here’s a cleaner and more formal revision of that section for your `README.md`:
+
+---
+
+1. Merchant Registration to Exception List
+
+  - After registering a merchant in the `AddressRegistry`, the merchant must also be added to the exception list in the `DigitalWalletToken (ERC7818Exception)` contract.
+  - This can be done either manually or via an owner contract call executed in sequence.  
+   _**Note:** This step is not required when using `DigitalWalletTokenV2`._
+
+
+
 #### Additional Rules
 - Tokens held by citizens **MUST NOT** be transferable from one citizen to another.
 - Tokens held by merchants **MUST NOT** be transferable back to citizens. 

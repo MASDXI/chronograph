@@ -45,4 +45,12 @@ contract DigitalWalletToken is RetailToken, Ownable {
     function updateFrozenRegistry(IFrozenRegistry frozenRegistry) public onlyOwner {
         _updateFrozenRegistry(frozenRegistry);
     }
+
+    function addToExceptionList(address account) public onlyOwner {
+        _addToExceptionList(account);
+    }
+
+    function removeFromExceptionList(address account) public onlyOwner {
+        _removeFromExceptionList(account);
+    }
 }

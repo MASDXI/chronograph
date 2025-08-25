@@ -65,9 +65,6 @@ contract MerchantDigitalWalletToken is AddressRegistryError, IIssuer, WholesaleD
     }
 
     function removeIssuer(address issuer) public override onlyOwner returns (bool) {
-        if (issuer == address(0)) {
-            revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.INVALID_ADDRESS);
-        }
         if (!isIssuer(issuer)) {
             revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.NOT_EXIST);
         }
