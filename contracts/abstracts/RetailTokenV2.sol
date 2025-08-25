@@ -46,7 +46,7 @@ abstract contract RetailTokenV2 is
     }
 
     function _updateTime(uint48 start, uint48 end) internal virtual {
-        if (start == 0 || end == 0) {
+        if (start == 0) {
             revert InvalidTime();
         }
         if (start <= end) {
