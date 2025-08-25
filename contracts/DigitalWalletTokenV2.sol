@@ -47,6 +47,10 @@ contract DigitalWalletTokenV2 is RetailTokenV2, Ownable {
         _updateFrozenRegistry(frozenRegistry);
     }
 
+    function updateTimeStamp(uint48 startTime, uint48 endTime) public onlyOwner() {
+        _updateTime(start, end);
+    }
+
     function updateMerchantDigitalToken(IERC5679 merchantDigitalToken) public onlyOwner {
         updateMerchantDigitalToken(merchantDigitalToken);
     }
