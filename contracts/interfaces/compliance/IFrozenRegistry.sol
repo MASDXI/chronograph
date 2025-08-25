@@ -9,6 +9,9 @@ interface IFrozenRegistry {
     /// @dev This emits when an address is frozen
     event FundsFrozen(address target);
 
+    /// @dev This emits when an address is frozen (currently missing in proposal)
+    event FundsUnfrozen(address target);
+
     /// @dev Is given the account address is registered as merchant.
     function isFrozen(address account) external view returns (bool);
 

@@ -10,7 +10,7 @@ import {IFrozenRegistry} from "../interfaces/compliance/IFrozenRegistry.sol";
 import {TransferError} from "../exception/TransferError.sol";
 import {LogAddress} from "../utils/LogAddress.sol";
 
-abstract contract MerchantDigitalToken is ERC20, IERC2980, IERC5679, LogAddress, TransferError {
+abstract contract WholesaleDigitalToken is ERC20, IERC2980, IERC5679, LogAddress, TransferError {
     uint256 private immutable _cap;
     uint256 private _totalSupply;
 
@@ -43,6 +43,7 @@ abstract contract MerchantDigitalToken is ERC20, IERC2980, IERC5679, LogAddress,
         emit Log("frozen_registry", oldFrozenRegistry, address(frozenRegistry));
     }
 
+    /// @dev RESERVED01 mean InvalidAddressFromOrToIsFrozen
     function _beforeTransfer(address from, address to, uint256 amount) internal virtual {
         if ((frozenlist(from) || frozenlist(to))) {
             revert InvalidTransferType(TRANSFER_ERROR_TYPE.RESERVED01);

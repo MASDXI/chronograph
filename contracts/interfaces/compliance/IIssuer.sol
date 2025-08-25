@@ -6,6 +6,8 @@ pragma solidity >=0.8.0 <0.9.0;
 /// See https://eips.ethereum.org/EIPS/eip-2980 #Issuers
 
 interface IIssuer {
+    /// @dev emits when an issuer address is add/remove/transfer (currently missing in proposal)
+
     /// @dev getter to determine if address has issuer role
     function isIssuer(address _addr) external view returns (bool);
 

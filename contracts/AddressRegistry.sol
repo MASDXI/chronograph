@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.20;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {AddressRegistryError} from "./exception/AddressRegistryError.sol";
 import {IAddressRegistry} from "./interfaces/compliance/IAddressRegistry.sol";
 
-contract AddressRegistry is IAddressRegistry, Ownable {
+/// @dev Ownable is compatible with ERC-173
+contract AddressRegistry is AddressRegistryError, IAddressRegistry, Ownable {
     mapping(address => bool) private _citizenList;
     mapping(address => bool) private _merchantList;
     mapping(address => bytes32) private _locationList;
@@ -37,6 +39,9 @@ contract AddressRegistry is IAddressRegistry, Ownable {
         // @TODO check
         delete _citizenList[account];
         delete _locationList[account];
+
+        // @TODO emit 
+
         return true;
     }
 
@@ -44,12 +49,18 @@ contract AddressRegistry is IAddressRegistry, Ownable {
         // @TODO check
         _merchantList[account] = true;
         _locationList[account] = location;
+
+        // @TODO emit 
+
         return true;
     }
 
     function removeMerchant(address account) public onlyOwner returns (bool) {
         delete _merchantList[account];
         delete _locationList[account];
+
+        // @TODO emit 
+
         return true;
     }
 }

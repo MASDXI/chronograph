@@ -11,7 +11,7 @@ import {IFrozenRegistry} from "../interfaces/compliance/IFrozenRegistry.sol";
 import {TransferError} from "../exception/TransferError.sol";
 import {LogAddress} from "../utils/LogAddress.sol";
 
-abstract contract DigitalTokenV2 is
+abstract contract RetailTokenV2 is
     ERC20,
     ERC20Capped,
     IERC5679,
@@ -84,6 +84,7 @@ abstract contract DigitalTokenV2 is
         emit Log("frozen_registry", oldFrozenRegistry, address(frozenRegistry));
     }
 
+    /// @dev RESERVED01 mean InvalidAddressFromOrToIsFrozen
     function _beforeTransfer(address from, address to, uint256 amount) internal virtual {
         if (_frozenRegistry.isFrozen(from) || _frozenRegistry.isFrozen(to)) {
             revert InvalidTransferType(TRANSFER_ERROR_TYPE.RESERVED01);
@@ -98,6 +99,7 @@ abstract contract DigitalTokenV2 is
 
     function _afterTransfer(address from, address to, uint256 amount) internal {
         _burn(to, amount);
+        // @TODO "" can change to unstructured data or string for auditable.
         _merchantDigitalToken.mint(to, amount, "");
     }
 

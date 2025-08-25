@@ -4,7 +4,7 @@
 <img src="./assets/banner.jpeg" width="360"/>
 </h1>
 
-Project `chronograph-evm` explores the design of a [10,000 Baht Digital Wallet](https://digitalwallet.go.th) by applying relevant Ethereum standards, including [ERC-6372](https://eips.ethereum.org/EIPS/eip-6372) and [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818).
+Project `chronograph-evm` explores design of a [10,000 Baht Digital Wallet](https://digitalwallet.go.th) by applying relevant Ethereum standards, including [ERC-6372](https://eips.ethereum.org/EIPS/eip-6372) and [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818).
 
 > [!Important]
 > This is not official source code of Digital Wallet Project form government.
@@ -66,7 +66,6 @@ Transfer Cycle 4+: Spender balance[3] → Receiver balance[3] (stays at final ti
 - [ERC-1400: The Security Token Standard](https://www.polymath.network/erc-1400)
 - [ERC-3643: T-REX - Token for Regulated EXchange](https://eips.ethereum.org/EIPS/eip-3643)
 - [ERC-7291: Purpose bound money](https://eips.ethereum.org/EIPS/eip-7291)
-
 
 ## Copyright
 

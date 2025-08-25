@@ -12,19 +12,24 @@ import {IFrozenRegistry} from "../interfaces/compliance/IFrozenRegistry.sol";
 import {TransferError} from "../exception/TransferError.sol";
 import {LogAddress} from "../utils/LogAddress.sol";
 
-abstract contract DigitalToken is IERC5679, ERC7818, ERC7818Exception, LogAddress, TransferError {
+abstract contract RetailToken is
+    IERC5679,
+    ERC7818,
+    ERC7818Exception,
+    LogAddress,
+    TransferError
+{
     IERC5679 private _merchantDigitalToken;
     IAddressRegistry private _addressRegistry;
     IFrozenRegistry private _frozenRegistry;
 
-    /// @dev hardcoded configuration to match requirement.
     constructor(
         string memory name_,
-        string memory symbol_
-    ) ERC7818(name_, symbol_, block.timestamp, 15778458, 1, false) {
-        // epoch duration is 6 months 15_778_458 seconds
-        // window size 1 epoch
-    }
+        string memory symbol_,
+        uint256 initTimestamp,
+        uint40 duration,
+        uint8 size
+    ) ERC7818(name_, symbol_, initTimestamp, duration, size, false) {}
 
     function _beforeTransfer(address from, address to, uint256 amount) internal virtual {
         if (!(_addressRegistry.isCitizen(from) && _addressRegistry.isMerchant(to))) {
@@ -40,6 +45,7 @@ abstract contract DigitalToken is IERC5679, ERC7818, ERC7818Exception, LogAddres
         _merchantDigitalToken.mint(to, amount, "");
     }
 
+    /// @dev RESERVED01 mean InvalidAddressFromOrToIsFrozen
     function _beforeTransferAtEpoch(
         uint256 epoch,
         address from,

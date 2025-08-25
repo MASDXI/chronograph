@@ -1,23 +1,23 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.20;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IERC5679Ext20 as IERC5679} from "./interfaces/IERC5679.sol";
+import {RetailToken} from "./abstracts/RetailToken.sol";
 import {IAddressRegistry} from "./interfaces/compliance/IAddressRegistry.sol";
 import {IFrozenRegistry} from "./interfaces/compliance/IFrozenRegistry.sol";
-import {DigitalTokenV2} from "./abstracts/DigitalTokenV2.sol";
 
-contract DigitWalletTokenV2 is DigitalTokenV2, Ownable {
+/// @dev Ownable is compatible with ERC-173
+contract DigitalWalletToken is RetailToken, Ownable {
+    /// @dev hardcoded configuration to match requirement.
+    // epoch duration is 6 months 15_778_458 seconds
+    // window size 1 epoch
     constructor(
         string memory name_,
         string memory symbol_,
-        uint256 cap_,
-        uint48 startTime_,
-        uint48 endTime_,
         address owner_,
         IAddressRegistry addressRegistry_,
         IFrozenRegistry frozenRegistry_
-    ) DigitalTokenV2(name_, symbol_, cap_, startTime_, endTime_) Ownable(owner_) {
+    ) RetailToken(name_, symbol_, block.timestamp, 15_778_458, 1) Ownable(owner_) {
         _updateAddressRegistry(addressRegistry_);
         _updateFrozenRegistry(frozenRegistry_);
     }
@@ -44,9 +44,5 @@ contract DigitWalletTokenV2 is DigitalTokenV2, Ownable {
 
     function updateFrozenRegistry(IFrozenRegistry frozenRegistry) public onlyOwner {
         _updateFrozenRegistry(frozenRegistry);
-    }
-
-    function updateMerchantDigitalToken(IERC5679 merchantDigitalToken) public onlyOwner {
-        updateMerchantDigitalToken(merchantDigitalToken);
     }
 }
