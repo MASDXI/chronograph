@@ -4,18 +4,31 @@ pragma solidity >=0.8.0 <0.9.0;
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Capped} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
-import {IERC5679} from "./interfaces/IERC5679-ERC20.sol";
+import {IERC5679Ext20 as IERC5679} from "./interfaces/IERC5679.sol";
 import {IERC6372} from "./interfaces/review-IERC6372.sol";
 import {IAddressRegistry} from "./interfaces/IAddressRegistry.sol";
-import {TransferError} from "./interfaces/TransferError.sol";
+import {TransferError} from "./exception/TransferError.sol";
+import {LogAddress} from "./utils/LogAddress.sol";
 
-/// @custom:strict allowed to override _updateTime, _updateRegistry and _updateMerchantToken only.
-abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC5679, IERC6372, TransferError {
-    uint48 private _startTime;
-    uint48 private _endTime;
+abstract contract DigitalWalletTokenV2 is
+    ERC20,
+    ERC20Capped,
+    IERC5679,
+    IERC6372,
+    LogAddress,
+    TransferError
+{
+    struct Timestamp {
+        uint48 start;
+        uint48 end;
+    }
 
     IERC5679 private _merchantDigitalToken;
     IAddressRegistry private _addressRegistry;
+
+    Timestamp private _Timestamp;
+
+    event TimestampUpdated(Timestamp oldTimestamp, Timestamp newTimestamp);
 
     error InvalidStartTime(uint48 startTime, uint48 endTime);
     error InvalidTime();
@@ -23,39 +36,42 @@ abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC5679, IERC6372
     constructor(
         string memory name_,
         string memory symbol_,
-        uint256 cap_
-    ) ERC20(name_, symbol_) ERC20Capped(cap_) {}
+        uint256 cap_,
+        uint48 startTime_,
+        uint48 endTime_
+    ) ERC20(name_, symbol_) ERC20Capped(cap_) {
+        _updateTime(startTime_, endTime_);
+    }
 
-    function _updateTime(uint48 startTime, uint48 endTime) internal virtual {
-        if (startTime == 0 || endTime == 0) {
+    function _updateTime(uint48 start, uint48 end) internal virtual {
+        if (start == 0 || end == 0) {
             revert InvalidTime();
         }
-        if (startTime < endTime) {
-            revert InvalidStartTime(startTime, endTime);
+        if (start <= end) {
+            revert InvalidStartTime(start, end);
         }
-        uint48 oldStartTime = startTime;
-        uint48 oldEndTime = endTime;
-        _startTime = startTime;
-        _endTime = endTime;
+        Timestamp memory oldTimestamp = _Timestamp;
+        _Timestamp.start = start;
+        _Timestamp.end = end;
 
-        // @TODO ActiveTimeUpdated(oldStartTime, oldEndTime, startTime, endTime);
+        emit TimestampUpdated(oldTimestamp, _Timestamp);
     }
 
     function _updateMerchantDigitalToken(IERC5679 merchantDigitalToken) internal virtual {
         address oldMerchantDigitalToken = address(_merchantDigitalToken);
         _merchantDigitalToken = merchantDigitalToken;
 
-        // @TODO MerchantDigitalTokenUpdated(oldMerchantDigitalToken, merchantDigitalToken);
+        emit Log(oldMerchantDigitalToken, address(merchantDigitalToken));
     }
 
     function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
         address oldAddressRegistry = address(_addressRegistry);
         _addressRegistry = addressRegistry;
 
-        // @TODO AddressRegistryUpdated(oldAddressRegistry, addressRegistry);
+        emit Log(oldAddressRegistry, address(addressRegistry));
     }
 
-    function _beforeTransfer(address from, address to, uint256 amount) internal {
+    function _beforeTransfer(address from, address to, uint256 amount) internal virtual {
         if (!(_addressRegistry.isCitizen(from) && _addressRegistry.isMerchant(to))) {
             revert InvalidTransferType(TRANSFER_ERROR_TYPE.NON_CITIZEN);
         }
@@ -120,15 +136,15 @@ abstract contract DigitalWalletTokenV2 is ERC20, ERC20Capped, IERC5679, IERC6372
     }
 
     function startTime() public view returns (uint48) {
-        return _startTime;
+        return _Timestamp.start;
     }
 
     function endTime() public view returns (uint48) {
-        return _endTime;
+        return _Timestamp.end;
     }
 
     /// @dev if true citizen can transfer, otherwise not.
     function isTransferable() public view returns (bool) {
-        return clock() >= _startTime && clock() <= _endTime;
+        return clock() >= _Timestamp.start && clock() <= _Timestamp.end;
     }
 }

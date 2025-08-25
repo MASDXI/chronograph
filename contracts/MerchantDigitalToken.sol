@@ -2,12 +2,12 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC5679} from "./interfaces/IERC5679-ERC20.sol";
+import {IERC5679Ext20 as IERC5679} from "./interfaces/IERC5679.sol";
 import {IAddressRegistry} from "./interfaces/IAddressRegistry.sol";
-import {TransferError} from "./interfaces/TransferError.sol";
+import {TransferError} from "./exception/TransferError.sol";
+import {LogAddress} from "./utils/LogAddress.sol";
 
-/// @custom:strict allowed to override _updateRegistry only.
-abstract contract MerchantDigitalToken is ERC20, IERC5679, TransferError {
+abstract contract MerchantDigitalToken is ERC20, IERC5679, LogAddress, TransferError {
     uint256 private immutable _cap;
     uint256 private _totalSupply;
 
@@ -25,20 +25,20 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679, TransferError {
         _cap = cap_;
     }
 
-    function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
+    function _updateAddressRegistry(IAddressRegistry addressRegistry) internal {
         address oldAddressRegistry = address(_addressRegistry);
         _addressRegistry = addressRegistry;
 
-        // @TODO AddressRegistryUpdated(oldAddressRegistry, addressRegistry);
+        emit Log(oldAddressRegistry, address(addressRegistry));
     }
 
-    function _beforeTransfer(address from, address to, uint256 amount) internal {
+    function _beforeTransfer(address from, address to, uint256 amount) internal virtual {
         if (!(_addressRegistry.isMerchant(from) && _addressRegistry.isMerchant(to))) {
             revert InvalidTransferType(TRANSFER_ERROR_TYPE.NON_MERCHANT);
         }
     }
 
-    function _afterTransfer(address from, address to, uint256 amount) internal {
+    function _afterTransfer(address from, address to, uint256 amount) internal virtual {
         // @TODO something should do after transfer?
     }
 
@@ -91,7 +91,7 @@ abstract contract MerchantDigitalToken is ERC20, IERC5679, TransferError {
         return _cap;
     }
 
-    function decimals() public view override returns (uint8) {
+    function decimals() public pure override returns (uint8) {
         return 6;
     }
 

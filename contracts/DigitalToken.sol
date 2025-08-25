@@ -5,13 +5,19 @@ import {ERC7818} from "@kiwarilabs/contracts/tokens/ERC20/ERC7818.sol";
 import {ERC7818Exception} from "@kiwarilabs/contracts/tokens/ERC20/extensions/ERC7818Exception.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IERC5679} from "./interfaces/IERC5679-ERC20.sol";
+import {IERC5679Ext20 as IERC5679} from "./interfaces/IERC5679.sol";
 import {IERC6372} from "./interfaces/review-IERC6372.sol";
 import {IAddressRegistry} from "./interfaces/IAddressRegistry.sol";
-import {TransferError} from "./interfaces/TransferError.sol";
+import {TransferError} from "./exception/TransferError.sol";
+import {LogAddress} from "./utils/LogAddress.sol";
 
-/// @custom:strict allowed to override _updateRegistry and _updateMerchantToken only.
-abstract contract DigitalWalletToken is IERC5679, ERC7818, ERC7818Exception, TransferError {
+abstract contract DigitalWalletToken is
+    IERC5679,
+    ERC7818,
+    ERC7818Exception,
+    LogAddress,
+    TransferError
+{
     IERC5679 private _merchantDigitalToken;
     IAddressRegistry private _addressRegistry;
 
@@ -25,7 +31,7 @@ abstract contract DigitalWalletToken is IERC5679, ERC7818, ERC7818Exception, Tra
         _merchantDigitalToken = MerchantToken_;
     }
 
-    function _beforeTransfer(address from, address to, uint256 amount) internal {
+    function _beforeTransfer(address from, address to, uint256 amount) internal virtual {
         if (!(_addressRegistry.isCitizen(from) && _addressRegistry.isMerchant(to))) {
             revert InvalidTransferType(TRANSFER_ERROR_TYPE.NON_CITIZEN);
         }
@@ -34,7 +40,7 @@ abstract contract DigitalWalletToken is IERC5679, ERC7818, ERC7818Exception, Tra
         }
     }
 
-    function _afterTransfer(address from, address to, uint256 amount) internal {
+    function _afterTransfer(address from, address to, uint256 amount) internal virtual {
         _burnFromException(to, amount);
         _merchantDigitalToken.mint(to, amount, "");
     }
@@ -44,7 +50,7 @@ abstract contract DigitalWalletToken is IERC5679, ERC7818, ERC7818Exception, Tra
         address from,
         address to,
         uint256 amount
-    ) internal {
+    ) internal virtual {
         if (!(_addressRegistry.isCitizen(from) && _addressRegistry.isMerchant(to))) {
             revert InvalidTransferType(TRANSFER_ERROR_TYPE.NON_CITIZEN);
         }
@@ -58,7 +64,7 @@ abstract contract DigitalWalletToken is IERC5679, ERC7818, ERC7818Exception, Tra
         address from,
         address to,
         uint256 amount
-    ) internal {
+    ) internal virtual {
         _burnFromException(to, amount);
         _merchantDigitalToken.mint(to, amount, "");
     }
@@ -67,18 +73,18 @@ abstract contract DigitalWalletToken is IERC5679, ERC7818, ERC7818Exception, Tra
         return block.timestamp;
     }
 
-    function _updateMerchantDigitalToken(IERC5679 merchantDigitalToken) internal virtual {
+    function _updateMerchantDigitalToken(IERC5679 merchantDigitalToken) internal {
         address oldMerchantDigitalToken = address(_merchantDigitalToken);
         _merchantDigitalToken = merchantDigitalToken;
 
-        // @TODO MerchantDigitalTokenUpdated(oldMerchantDigitalToken, merchantDigitalToken);
+        emit Log(oldMerchantDigitalToken, address(merchantDigitalToken));
     }
 
-    function _updateAddressRegistry(IAddressRegistry addressRegistry) internal virtual {
+    function _updateAddressRegistry(IAddressRegistry addressRegistry) internal {
         address oldAddressRegistry = address(_addressRegistry);
         _addressRegistry = addressRegistry;
 
-        // @TODO AddressRegistryUpdated(oldAddressRegistry, addressRegistry);
+        emit Log(oldAddressRegistry, address(addressRegistry));
     }
 
     function decimals() public pure override returns (uint8) {

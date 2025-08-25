@@ -22,11 +22,11 @@ The system is governed by the following requirements. The key words “MUST”, 
 
 Two possible approaches are considered for managing the token life span
 
-#### [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818) Approach
+#### [ERC-7818](https://eips.ethereum.org/EIPS/eip-7818) : [DigitalToken.sol](./contracts/DigitalToken.sol)
  - Supports per-user issuance, meaning each citizen’s 6-month validity period begins at the time of receipt.
  - Suitable if on-boarding occurs at different times.
 
-#### [ERC-6372](https://eips.ethereum.org/EIPS/eip-6372) Approach
+#### [ERC-6372](https://eips.ethereum.org/EIPS/eip-6372) : [DigitalTokenV2.sol](./contracts/DigitalTokenV2.sol)
 
 - Instead of expiring tokens, the token itself has no lifespan.
 Transferability is restricted within a defined period using time-based clocks.
