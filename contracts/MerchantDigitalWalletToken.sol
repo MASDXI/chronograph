@@ -9,7 +9,12 @@ import {IFrozenRegistry} from "./interfaces/compliance/IFrozenRegistry.sol";
 import {IIssuer} from "./interfaces/compliance/IIssuer.sol";
 
 /// @dev Ownable is compatible with ERC-173
-contract MerchantDigitalWalletToken is AddressRegistryError, IIssuer, WholesaleDigitalToken, Ownable {
+contract MerchantDigitalWalletToken is
+    AddressRegistryError,
+    IIssuer,
+    WholesaleDigitalToken,
+    Ownable
+{
     address private _issuer;
 
     constructor(

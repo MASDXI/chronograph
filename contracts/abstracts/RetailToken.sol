@@ -12,13 +12,7 @@ import {IFrozenRegistry} from "../interfaces/compliance/IFrozenRegistry.sol";
 import {TransferError} from "../exception/TransferError.sol";
 import {LogAddress} from "../utils/LogAddress.sol";
 
-abstract contract RetailToken is
-    IERC5679,
-    ERC7818,
-    ERC7818Exception,
-    LogAddress,
-    TransferError
-{
+abstract contract RetailToken is IERC5679, ERC7818, ERC7818Exception, LogAddress, TransferError {
     IERC5679 private _merchantDigitalToken;
     IAddressRegistry private _addressRegistry;
     IFrozenRegistry private _frozenRegistry;

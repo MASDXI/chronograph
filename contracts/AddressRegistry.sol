@@ -57,7 +57,7 @@ contract AddressRegistry is AddressRegistryError, IAddressRegistry, Ownable {
         return true;
     }
 
-    function removeCitizen(address account) public onlyOwner returns (bool) {
+    function removeAddressFromCitizenList(address account) public onlyOwner returns (bool) {
         if (!isCitizen(account)) {
             revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.NOT_EXIST);
         }
@@ -70,7 +70,7 @@ contract AddressRegistry is AddressRegistryError, IAddressRegistry, Ownable {
     }
 
     /// @dev RESERVED02 mean InvalidAddressAlreadyCitizen
-    function registerMerchant(address account, bytes32 location) public onlyOwner returns (bool) {
+    function addAddressToMerchantList(address account, bytes32 location) public onlyOwner returns (bool) {
         if (account == address(0)) {
             revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.INVALID_ADDRESS);
         }
@@ -91,7 +91,7 @@ contract AddressRegistry is AddressRegistryError, IAddressRegistry, Ownable {
         return true;
     }
 
-    function removeMerchant(address account) public onlyOwner returns (bool) {
+    function removeAddressFromMerchantList(address account) public onlyOwner returns (bool) {
         if (!isMerchant(account)) {
             revert InvalidAddressRegistryType(REGISTRY_ERROR_TYPE.NOT_EXIST);
         }
